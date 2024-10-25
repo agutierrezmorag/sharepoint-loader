@@ -2,15 +2,14 @@ import asyncio
 import uuid
 
 import streamlit as st
+from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 
 from langchain_utils import get_agent
 
 
-async def answer_question(question, response_placeholder):
-    config = {"configurable": {"thread_id": st.session_state.thread_id}}
-    agent = get_agent()
+async def answer_question(agent, config, question, response_placeholder):
     full_response = ""
 
     async for event in agent.astream_events(
@@ -26,6 +25,8 @@ async def answer_question(question, response_placeholder):
                 full_response += content
                 response_placeholder.markdown(full_response + "▌")
 
+    return full_response
+
 
 if __name__ == "__main__":
     if "memory" not in st.session_state:
@@ -35,11 +36,21 @@ if __name__ == "__main__":
     if "question" not in st.session_state:
         st.session_state.question = ""
 
+    config = {"configurable": {"thread_id": st.session_state.thread_id}}
+    agent = get_agent()
+    msgs = StreamlitChatMessageHistory(key="message_history")
     st.title("AquaChile Sharepoint Docs Q&A")
 
+    for msg in msgs.messages:
+        st.chat_message(msg.type).write(msg.content)
+
     if question := st.chat_input():
+        msgs.add_user_message(question)
         st.chat_message("human").markdown(question)
 
         with st.chat_message("ai"):
             response_placeholder = st.empty()
-            asyncio.run(answer_question(question, response_placeholder))
+            ai_answer = asyncio.run(
+                answer_question(agent, config, question, response_placeholder)
+            )
+        msgs.add_ai_message(ai_answer)
