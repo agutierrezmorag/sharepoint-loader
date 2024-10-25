@@ -47,6 +47,7 @@ def _get_retriever():
     return retriever
 
 
+@st.cache_resource
 def get_agent():
     retriever = _get_retriever()
     tools = _get_tools(retriever)
