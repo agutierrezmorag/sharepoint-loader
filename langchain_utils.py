@@ -1,3 +1,4 @@
+import streamlit as st
 from dotenv import load_dotenv
 from langchain.tools.retriever import create_retriever_tool
 from langchain_community.retrievers import AzureAISearchRetriever
@@ -23,7 +24,8 @@ EMBEDDINGS_MODEL = AzureOpenAIEmbeddings(
 SYS_PROMPT = """
 Eres un asistente virtual que quiere ayudar a los empleados de la empresa AquaChile a encontrar \
 información relevante sobre documentos subidos a Sharepoint y a responder preguntas sobre ellos. \
-Mantén la conversación en un tono amigable y profesional.
+Mantén la conversación en un tono amigable y profesional. Empieza y termina cada conversación \
+con un emoji de un pez 🐟.
 """
 
 
@@ -49,5 +51,10 @@ def get_agent():
     retriever = _get_retriever()
     tools = _get_tools(retriever)
 
-    agent = create_react_agent(LLM, tools, state_modifier=SYS_PROMPT)
+    agent = create_react_agent(
+        LLM,
+        tools,
+        state_modifier=SYS_PROMPT,
+        checkpointer=st.session_state.memory,
+    )
     return agent
