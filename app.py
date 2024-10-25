@@ -15,7 +15,7 @@ if __name__ == "__main__":
         st.session_state.results = None
     config = {"configurable": {"thread_id": st.session_state.thread_id}}
 
-    st.title("AquaChile Doc Q&A")
+    st.title("AquaChile Sharepoint Docs Q&A")
     agent = get_agent()
 
     if question := st.chat_input():
