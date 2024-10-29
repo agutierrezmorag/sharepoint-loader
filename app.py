@@ -1,4 +1,5 @@
 import asyncio
+import time
 import uuid
 
 import streamlit as st
@@ -6,17 +7,19 @@ from langchain_community.chat_message_histories import StreamlitChatMessageHisto
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 
-from langchain_utils import get_agent
+from langchain_utils import get_agent, set_tracer
 
 
-async def answer_question(agent, config, question, response_placeholder):
+async def answer_question(
+    agent, config, question, agent_thoughts_placeholder, response_placeholder
+):
     full_response = ""
+    full_tool_output = ""
 
     async for event in agent.astream_events(
         {"messages": [HumanMessage(content=question)]},
         config=config,
         version="v2",
-        include_types=["chat_model"],
     ):
         event_type = event["event"]
         if event_type == "on_chat_model_stream":
@@ -24,6 +27,36 @@ async def answer_question(agent, config, question, response_placeholder):
             if content:
                 full_response += content
                 response_placeholder.markdown(full_response + "▌")
+        if event_type == "on_chain_end":
+            print(event["name"])
+            if event["name"] == "LangGraph":
+                time.sleep(1)
+                agent_thoughts_placeholder.update(
+                    label="🎣 Respuesta generada.",
+                    expanded=False,
+                    state="complete",
+                )
+        elif event_type == "on_tool_start":
+            tool_name = event["name"]
+            query = event["data"].get("input")["query"]
+            if tool_name == "sharepoint_retriever":
+                agent_thoughts_placeholder.markdown(
+                    f"- 🐟🔎 Consultando *{query}* en **sharepoint**..."
+                )
+        elif event_type == "on_tool_end":
+            output = event["data"].get("output")
+            if output:
+                agent_thoughts_placeholder.markdown(
+                    "- 🎏 Creo haber encontrado textos relevantes:"
+                )
+                full_tool_output += output.content
+                agent_thoughts_placeholder.text_area(
+                    "Contexto",
+                    help="La IA utiliza este contexto para generar la respuesta. \
+                                Estos textos provienen de una variedad de reglamentos y documentos generales de la universidad.",
+                    value=full_tool_output,
+                    disabled=True,
+                )
 
     return full_response
 
@@ -36,7 +69,10 @@ if __name__ == "__main__":
     if "question" not in st.session_state:
         st.session_state.question = ""
 
-    config = {"configurable": {"thread_id": st.session_state.thread_id}}
+    config = {
+        "callbacks": [set_tracer("Sharepoint Q&A")],
+        "configurable": {"thread_id": st.session_state.thread_id},
+    }
     agent = get_agent()
     msgs = StreamlitChatMessageHistory(key="message_history")
     st.title("AquaChile Sharepoint Docs Q&A")
@@ -50,7 +86,14 @@ if __name__ == "__main__":
 
         with st.chat_message("ai"):
             response_placeholder = st.empty()
+            agent_thoughts_placeholder = st.status("🤔 Pensando...", expanded=False)
             ai_answer = asyncio.run(
-                answer_question(agent, config, question, response_placeholder)
+                answer_question(
+                    agent,
+                    config,
+                    question,
+                    agent_thoughts_placeholder,
+                    response_placeholder,
+                )
             )
         msgs.add_ai_message(ai_answer)
