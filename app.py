@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 
-from langchain_utils import get_agent
+from utils.langchain_utils import get_agent
 
 load_dotenv()
 
