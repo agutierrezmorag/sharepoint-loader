@@ -75,6 +75,7 @@ def submit_question(question):
 
 
 if __name__ == "__main__":
+    st.set_page_config(page_title="Agente AquaChile", page_icon="🐟")
     if "msgs" not in st.session_state:
         st.session_state.msgs = StreamlitChatMessageHistory(key="msgs")
     if "memory" not in st.session_state:
