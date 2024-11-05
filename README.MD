@@ -56,6 +56,8 @@ Este proyecto es un sistema **RAG** de preguntas y respuestas (Q&A) para AquaChi
 1. Abre el archivo `doc_ingestion/doc_loader.ipynb` en Jupyter Notebook o JupyterLab.
 2. Ejecuta todas las celdas para cargar y procesar los documentos desde SharePoint.
 
+**Solo ejecutar la ingesta de documentos cuando se suban nuevos documentos en el sharepoint *Aqua_PDF***.
+
 ### Ejecución de la Aplicación
 
 1. Ejecuta la aplicación Streamlit:
