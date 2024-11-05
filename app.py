@@ -64,7 +64,8 @@ async def answer_question(question, agent_thoughts_placeholder, response_placeho
                         disabled=True,
                     )
     except Exception as e:
-        st.error(f"Error: {e}")
+        print(e)
+        st.error("Hubo un error al procesar tu pregunta. Por favor, intenta de nuevo.")
         return
 
     st.session_state.user_question = ""
