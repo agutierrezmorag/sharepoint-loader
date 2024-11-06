@@ -1,6 +1,5 @@
 import asyncio
 import re
-import time
 import uuid
 
 import streamlit as st
@@ -8,12 +7,13 @@ from dotenv import load_dotenv
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 
-from utils.langchain_utils import get_agent
+from utils.langchain_utils import get_agent, q_suggestion_chain
 
 load_dotenv()
 
 
 async def answer_question(question, agent_thoughts_placeholder, response_placeholder):
+    question_suggestion_chain = q_suggestion_chain()
     agent = get_agent()
     full_response = ""
     full_tool_output = ""
@@ -34,11 +34,15 @@ async def answer_question(question, agent_thoughts_placeholder, response_placeho
                     response_placeholder.markdown(full_response + "▌")
             if event_type == "on_chain_end":
                 if event["name"] == "AquaChile Agent":
-                    time.sleep(1)
                     agent_thoughts_placeholder.update(
                         label="🎣 Respuesta generada.",
                         expanded=False,
                         state="complete",
+                    )
+                    await asyncio.sleep(0.1)
+                    last_two_messages = st.session_state.memory.buffer[-2:]
+                    st.session_state.suggested_question = (
+                        question_suggestion_chain.invoke(last_two_messages)
                     )
             elif event_type == "on_tool_start":
                 tool_name = event["name"]
@@ -50,7 +54,6 @@ async def answer_question(question, agent_thoughts_placeholder, response_placeho
             elif event_type == "on_tool_end":
                 output = event["data"].get("output")
                 if output:
-                    print(output)
                     agent_thoughts_placeholder.markdown("- 🎏 Textos relevantes:")
                     cleaned_output = re.sub(
                         r'\{\s*"source":.*?\}', "", output, flags=re.DOTALL
@@ -64,8 +67,7 @@ async def answer_question(question, agent_thoughts_placeholder, response_placeho
                         disabled=True,
                     )
     except Exception as e:
-        print(e)
-        st.error("Hubo un error al procesar tu pregunta. Por favor, intenta de nuevo.")
+        st.error(f"Error: {e}")
         return
 
     st.session_state.user_question = ""
@@ -131,16 +133,23 @@ documentos del área de *Riesgo corporativo* de AquaChile. Pregunta lo que neces
     if question := st.chat_input(placeholder="Escribe tu pregunta..."):
         submit_question(question)
 
-    if st.session_state.user_question:
-        st.chat_message("human").markdown(question)
+    if st.session_state.user_question != "":
+        st.chat_message("human").markdown(st.session_state.user_question)
 
         with st.chat_message("ai"):
             response_placeholder = st.empty()
             agent_thoughts_placeholder = st.status("🤔 Pensando...", expanded=False)
             ai_answer = asyncio.run(
                 answer_question(
-                    question,
+                    st.session_state.user_question,
                     agent_thoughts_placeholder,
                     response_placeholder,
                 )
             )
+    if st.session_state.suggested_question:
+        st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
+        st.button(
+            f"✨ {st.session_state.suggested_question}",
+            on_click=submit_question,
+            args=(st.session_state.suggested_question,),
+        )
