@@ -7,8 +7,8 @@ Este proyecto es un sistema **RAG** de preguntas y respuestas (Q&A) para AquaChi
 1. Clona el repositorio:
 
     ```sh
-    git clone <URL_DEL_REPOSITORIO>
-    cd <NOMBRE_DEL_REPOSITORIO>
+    git clone https://github.com/agutierrezmorag/sharepoint-loader.git
+    cd sharepoint-loader
     ```
 
 2. Crea y activa un entorno virtual:
