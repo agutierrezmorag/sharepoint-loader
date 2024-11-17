@@ -1,7 +1,6 @@
 import json
 import re
 
-from dotenv import load_dotenv
 from langchain_core.messages import (
     AIMessage,
     HumanMessage,
@@ -17,8 +16,6 @@ from langgraph.prebuilt import ToolNode
 from utils.models import LLM
 from utils.prompts import Q_SUGGESTION_TEMPLATE, RAG_TEMPLATE, SUMMARY_TEMPLATE
 from utils.tools import TOOLS
-
-load_dotenv()
 
 METADATA_PATTERN = re.compile(r"Metadata:\s*({[^}]+})")
 

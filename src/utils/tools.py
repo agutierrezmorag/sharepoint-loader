@@ -1,6 +1,10 @@
+import os
+
 from langchain.tools.retriever import create_retriever_tool
 from langchain_community.retrievers import AzureAISearchRetriever
 from langchain_core.prompts import PromptTemplate
+
+AZURE_AI_SEARCH_INDEX_NAME = os.getenv("AZURE_AI_SEARCH_INDEX_NAME")
 
 document_prompt = PromptTemplate.from_template(
     "Metadata: {metadata} \nFuente:{page_content}\n ==="
@@ -9,7 +13,7 @@ document_prompt = PromptTemplate.from_template(
 retriever = AzureAISearchRetriever(
     content_key="content",
     top_k=5,
-    index_name="sharepoint-index",
+    index_name=AZURE_AI_SEARCH_INDEX_NAME,
 )
 
 retriever_tool = create_retriever_tool(
