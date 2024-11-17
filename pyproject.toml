@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "sharepoint-loader"
+version = "0.1.0"
+description = "AquaChile's AI RAG Agent"
+authors = ["Alvaro Gutierrez <alvarogutierrezmoraga@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langgraph = "^0.2.50"
+langchain = "^0.3.7"
+langchain-openai = "^0.2.8"
+streamlit = "^1.40.1"
+langchain-community = "^0.3.7"
+azure-identity = "^1.19.0"
+azure-search-documents = "^11.5.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
