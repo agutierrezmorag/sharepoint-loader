@@ -1,25 +1,16 @@
 from langchain_core.prompts import PromptTemplate
 
 Q_SUGGESTION_PROMPT = """
-Actúa como un empleado de AquaChile analizando la siguiente conversación para sugerir la siguiente pregunta natural.
-
+Imagina que estás escuchando una conversación entre un usuario y un asistente virtual de la empresa AquaChile. A continuación, verás un fragmento de esa conversación. 
+Tu misión es pensar en la próxima pregunta que el usuario podría hacer basándote en el contexto de la conversación. Asegúrate de que tu pregunta sea relevante y ayude a profundizar en el tema que se está discutiendo. 
+Genera y retorna solo la pregunta, sin incluir la respuesta del chatbot. Prioriza preguntas sobre términos específicos, detalles o información adicional que el usuario podría necesitar.
+Aquí tienes la conversación:
+---
 CONTEXTO PREVIO:
 Usuario: {user_input}
 Asistente: {bot_response}
-
-REQUISITOS:
-1. Genera UNA SOLA pregunta de seguimiento
-2. Enfócate en:
-   - Aclarar términos técnicos mencionados
-   - Solicitar ejemplos prácticos
-   - Profundizar en procedimientos específicos
-   - Consultar sobre excepciones o casos especiales
-
-RESTRICCIONES:
-- No generes preguntas hipotéticas
-- No preguntes por información fuera de documentos oficiales
-- Mantén la pregunta entre 10-20 palabras
-- Usa lenguaje corporativo formal
+---
+Basándote en esto, ¿cuál crees que sería la próxima pregunta del usuario?
 """
 Q_SUGGESTION_TEMPLATE = PromptTemplate.from_template(Q_SUGGESTION_PROMPT)
 
