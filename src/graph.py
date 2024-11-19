@@ -191,26 +191,37 @@ async def check_message_count(state: AgentState):
 
 async def summarize_conversation(state: AgentState):
     """Generate conversation summary and update system message."""
+    # Get system message
     system_message = filter_messages(state["messages"], include_types=[SystemMessage])[
         0
     ]
-    messages = filter_messages(
+
+    # Get human and AI messages
+    qa_messages = filter_messages(
         state["messages"],
         include_types=[HumanMessage, AIMessage],
     )
 
+    # Keep only last two messages if they exist
+    messages_to_keep = qa_messages[-2:] if len(qa_messages) >= 2 else qa_messages
+    messages_to_remove = [msg for msg in qa_messages if msg not in messages_to_keep]
+
+    # Create conversation string from messages to be removed only
     formatted_conversation = "\n".join(
         f"{'USER' if isinstance(msg, HumanMessage) else 'BOT'}: {msg.content}"
-        for msg in messages
+        for msg in messages_to_remove
     )
 
-    response = await LLM.with_config(config={"llm_temperature": 0.2}).ainvoke(
-        SUMMARY_TEMPLATE.format(conversation=formatted_conversation)
-    )
+    # Generate new summary only if there are messages to summarize
+    if formatted_conversation:
+        response = await LLM.with_config(config={"llm_temperature": 0.2}).ainvoke(
+            SUMMARY_TEMPLATE.format(conversation=formatted_conversation)
+        )
+        # Update system message with new summary
+        system_message.content = RAG_TEMPLATE.format(summary=response.content)
 
-    system_message.content = RAG_TEMPLATE.format(summary=response.content)
-
-    return {"messages": [RemoveMessage(id=msg.id) for msg in messages if msg.id]}
+    # Return messages to remove (all except system and last Q&A pair)
+    return {"messages": [RemoveMessage(id=msg.id) for msg in messages_to_remove]}
 
 
 agent_builder = StateGraph(AgentState)
