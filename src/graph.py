@@ -88,7 +88,7 @@ async def model(state: AgentState):
     return {"messages": response}
 
 
-async def pending_tool_calls(state: AgentState):
+def pending_tool_calls(state: AgentState):
     """Check if latest AI message contains tool calls and mark for processing.
 
     Args:
@@ -109,7 +109,7 @@ async def pending_tool_calls(state: AgentState):
     return "clean_messages"
 
 
-async def clean_messages(state: AgentState):
+def clean_messages(state: AgentState):
     """Remove tool-related messages from conversation history and extract document metadata.
 
     Args:
@@ -170,7 +170,7 @@ async def suggest_question(state: AgentState) -> AgentState:
     return {"suggested_question": response.content}
 
 
-async def check_message_count(state: AgentState):
+def check_message_count(state: AgentState):
     """Determine next node based on conversation length.
 
     Args:
