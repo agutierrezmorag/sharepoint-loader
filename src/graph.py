@@ -8,6 +8,7 @@ from langchain_core.messages import (
     SystemMessage,
     ToolMessage,
     filter_messages,
+    trim_messages,
 )
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, MessagesState, StateGraph
@@ -192,21 +193,27 @@ def check_message_count(state: AgentState):
 async def summarize_conversation(state: AgentState):
     """Generate conversation summary and update system message."""
     # Get system message
-    system_message = filter_messages(state["messages"], include_types=[SystemMessage])[
-        0
-    ]
+    system_message = state["messages"][0]
 
-    # Get human and AI messages
-    qa_messages = filter_messages(
+    # Instead of manual filtering, use trim_messages
+    qa_messages = trim_messages(
         state["messages"],
-        include_types=[HumanMessage, AIMessage],
+        max_tokens=2,  # Keep last 2 messages
+        token_counter=len,  # Count messages instead of tokens
+        strategy="last",
+        start_on=[HumanMessage, AIMessage],  # Only keep Human and AI messages
+        include_system=False,  # Don't include system message since we handle it separately
     )
 
-    # Keep only last two messages if they exist
-    messages_to_keep = qa_messages[-2:] if len(qa_messages) >= 2 else qa_messages
-    messages_to_remove = [msg for msg in qa_messages if msg not in messages_to_keep]
+    # Get messages to remove (all except system and trimmed messages)
+    messages_to_remove = [
+        msg
+        for msg in state["messages"]
+        if msg not in [system_message, *qa_messages]
+        and not isinstance(msg, RemoveMessage)
+    ]
 
-    # Create conversation string from messages to be removed only
+    # Create conversation string from messages to be removed
     formatted_conversation = "\n".join(
         f"{'USER' if isinstance(msg, HumanMessage) else 'BOT'}: {msg.content}"
         for msg in messages_to_remove
@@ -252,6 +259,6 @@ agent_builder.add_conditional_edges(
 agent_builder.add_edge("summarize_conversation", END)
 
 
-agent_graph = agent_builder.compile(checkpointer=MemorySaver()).with_config(
-    {"run_name": "Agente AquaChile"}
-)
+agent_graph = agent_builder.compile(
+    checkpointer=MemorySaver(),
+).with_config({"run_name": "Agente AquaChile"})
