@@ -1,5 +1,3 @@
-import re
-
 from langchain_core.messages import (
     AIMessage,
     HumanMessage,
@@ -18,8 +16,6 @@ from aquagraph.utils.prompts import (
 )
 from aquagraph.utils.state import AgentState
 from aquagraph.utils.tools import TOOLS
-
-METADATA_PATTERN = re.compile(r"Metadata:\s*({[^}]+})")
 
 
 async def manage_system_prompt(state: AgentState):
