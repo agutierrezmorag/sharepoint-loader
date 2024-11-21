@@ -10,37 +10,12 @@ from langchain_core.messages import (
     filter_messages,
     trim_messages,
 )
-from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import END, MessagesState, StateGraph
-from langgraph.prebuilt import ToolNode
-
-from utils.models import LLM
-from utils.prompts import Q_SUGGESTION_TEMPLATE, RAG_TEMPLATE, SUMMARY_TEMPLATE
-from utils.tools import TOOLS
+from models import LLM
+from prompts import Q_SUGGESTION_TEMPLATE, RAG_TEMPLATE, SUMMARY_TEMPLATE
+from state import AgentState
+from tools import TOOLS
 
 METADATA_PATTERN = re.compile(r"Metadata:\s*({[^}]+})")
-
-
-class AgentState(MessagesState):
-    """State class for managing conversation and suggested questions.
-
-    This class extends MessagesState to track the state of an agent's conversation,
-    including suggested follow-up questions and used documents.
-
-    Attributes:
-        suggested_question (str): The next question suggested by the agent to
-            continue the conversation flow.
-        used_docs (list[dict]): List of documents that have been referenced or
-            used during the conversation. Each document is represented as a
-            dictionary containing document metadata.
-
-    Inherits:
-        MessagesState: Base class for managing conversation message state.
-
-    """
-
-    suggested_question: str
-    used_docs: list[dict]
 
 
 async def manage_system_prompt(state: AgentState):
@@ -229,36 +204,3 @@ async def summarize_conversation(state: AgentState):
 
     # Return messages to remove (all except system and last Q&A pair)
     return {"messages": [RemoveMessage(id=msg.id) for msg in messages_to_remove]}
-
-
-agent_builder = StateGraph(AgentState)
-agent_builder.add_node(manage_system_prompt)
-agent_builder.add_node(model)
-agent_builder.add_node("tools", ToolNode(tools=TOOLS))
-agent_builder.add_node(clean_messages)
-agent_builder.add_node(suggest_question)
-agent_builder.add_node(summarize_conversation)
-
-agent_builder.set_entry_point("manage_system_prompt")
-agent_builder.add_edge("manage_system_prompt", "model")
-
-agent_builder.add_conditional_edges(
-    "model",
-    pending_tool_calls,
-    {"tools": "tools", "clean_messages": "clean_messages"},
-)
-
-agent_builder.add_edge("tools", "model")
-
-agent_builder.add_edge("clean_messages", "suggest_question")
-agent_builder.add_conditional_edges(
-    "suggest_question",
-    check_message_count,
-    {"end": END, "summarize_conversation": "summarize_conversation"},
-)
-agent_builder.add_edge("summarize_conversation", END)
-
-
-agent_graph = agent_builder.compile(
-    checkpointer=MemorySaver(),
-).with_config({"run_name": "Agente AquaChile"})

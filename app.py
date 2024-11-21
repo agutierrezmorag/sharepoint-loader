@@ -7,7 +7,8 @@ from langchain_community.chat_message_histories import StreamlitChatMessageHisto
 from langchain_core.messages import AIMessage, HumanMessage
 
 load_dotenv()
-from graph import agent_graph  # noqa: E402
+
+from aquagraph.graph import agent_graph  # noqa: E402
 
 
 async def answer_question(question, response_placeholder):
