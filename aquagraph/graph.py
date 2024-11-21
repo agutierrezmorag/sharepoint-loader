@@ -2,7 +2,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
 
-from utils.nodes import (
+from aquagraph.utils.nodes import (
     check_message_count,
     clean_messages,
     manage_system_prompt,
@@ -11,8 +11,8 @@ from utils.nodes import (
     suggest_question,
     summarize_conversation,
 )
-from utils.state import AgentState
-from utils.tools import TOOLS
+from aquagraph.utils.state import AgentState
+from aquagraph.utils.tools import TOOLS
 
 agent_builder = StateGraph(AgentState)
 agent_builder.add_node(manage_system_prompt)

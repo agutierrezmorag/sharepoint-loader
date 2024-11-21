@@ -10,10 +10,15 @@ from langchain_core.messages import (
     filter_messages,
     trim_messages,
 )
-from models import LLM
-from prompts import Q_SUGGESTION_TEMPLATE, RAG_TEMPLATE, SUMMARY_TEMPLATE
-from state import AgentState
-from tools import TOOLS
+
+from aquagraph.utils.models import LLM
+from aquagraph.utils.prompts import (
+    Q_SUGGESTION_TEMPLATE,
+    RAG_TEMPLATE,
+    SUMMARY_TEMPLATE,
+)
+from aquagraph.utils.state import AgentState
+from aquagraph.utils.tools import TOOLS
 
 METADATA_PATTERN = re.compile(r"Metadata:\s*({[^}]+})")
 
