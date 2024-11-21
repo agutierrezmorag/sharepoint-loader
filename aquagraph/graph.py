@@ -17,10 +17,10 @@ from aquagraph.utils.nodes import (
     suggest_question,
     summarize_conversation,
 )
-from aquagraph.utils.state import AgentState
+from aquagraph.utils.state import AgentState, InputState, OutputState
 from aquagraph.utils.tools import TOOLS
 
-agent_builder = StateGraph(AgentState)
+agent_builder = StateGraph(AgentState, input=InputState, output=OutputState)
 agent_builder.add_node(manage_system_prompt)
 agent_builder.add_node(model)
 agent_builder.add_node("tools", ToolNode(tools=TOOLS))

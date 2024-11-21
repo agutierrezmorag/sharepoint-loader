@@ -35,9 +35,11 @@ async def manage_system_prompt(state: AgentState):
             - messages: List including system prompt
     """
     messages = state["messages"]
-    system_messages = filter_messages(messages, include_types=[SystemMessage])
+    system_message = (
+        messages[0] if messages and isinstance(messages[0], SystemMessage) else None
+    )
 
-    if not system_messages:
+    if not system_message:
         formatted_template = RAG_TEMPLATE.format(summary="No hay resumen previo.")
         messages.insert(0, SystemMessage(content=formatted_template))
 
