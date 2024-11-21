@@ -1,4 +1,3 @@
-import json
 import re
 
 from langchain_core.messages import (
@@ -105,21 +104,39 @@ def clean_messages(state: AgentState):
         include_types=[ToolMessage],
     )
 
-    used_docs = []
-    for msg in tool_messages:
-        metadata_match = METADATA_PATTERN.search(msg.content)
+    doc_map = {}
 
-        if metadata_match:
-            try:
-                metadata = json.loads(metadata_match.group(1))
-                used_docs.append(
-                    {
-                        "Nombre del documento": metadata.get("title", ""),
-                        "Fuente": metadata.get("source", ""),
-                    }
-                )
-            except json.JSONDecodeError:
-                continue
+    for msg in tool_messages:
+        if msg.content:
+            doc_parts = msg.content.split("Nombre del documento: ")[1:]
+
+            for part in doc_parts:
+                try:
+                    title = part.split("\nFuente: ")[0].strip()
+                    source = part.split("\nFuente: ")[1].split("\nPagina: ")[0].strip()
+                    page = part.split("\nPagina: ")[1].split("\nContenido:")[0].strip()
+
+                    doc_key = f"{title}:{source}"
+
+                    if doc_key not in doc_map:
+                        doc_map[doc_key] = {
+                            "Nombre del documento": title,
+                            "Fuente": source,
+                            "Páginas": set(),
+                        }
+                    doc_map[doc_key]["Páginas"].add(page)
+
+                except IndexError:
+                    continue
+
+    used_docs = [
+        {
+            "Nombre del documento": doc["Nombre del documento"],
+            "Fuente": doc["Fuente"],
+            "Páginas": ", ".join(sorted(doc["Páginas"])),
+        }
+        for doc in doc_map.values()
+    ]
 
     messages_to_remove = [
         RemoveMessage(id=msg.id) for msg in tool_messages if msg.id is not None

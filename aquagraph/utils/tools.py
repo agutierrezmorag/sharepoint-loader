@@ -1,16 +1,21 @@
 import os
 
 from langchain.tools.retriever import create_retriever_tool
-from langchain_community.retrievers import AzureAISearchRetriever
 from langchain_core.prompts import PromptTemplate
+
+from aquagraph.utils.retriever import CustomAzureAISearchRetriever
 
 AZURE_AI_SEARCH_INDEX_NAME = os.getenv("AZURE_AI_SEARCH_INDEX_NAME")
 
-document_prompt = PromptTemplate.from_template(
-    "Metadata: {metadata} \nFuente:{page_content}\n ==="
-)
+document_prompt = PromptTemplate.from_template("""
+Nombre del documento: {title}
+Fuente: {source}
+Pagina: {page}
+Contenido:{page_content}
+===
+""")
 
-retriever = AzureAISearchRetriever(
+retriever = CustomAzureAISearchRetriever(
     content_key="content",
     top_k=5,
     index_name=AZURE_AI_SEARCH_INDEX_NAME,
