@@ -19,5 +19,5 @@ class AgentState(MessagesState):
 
     """
 
-    suggested_question: str
-    used_docs: list[dict]
+    suggested_question: str = ""
+    used_docs: list[dict] = []

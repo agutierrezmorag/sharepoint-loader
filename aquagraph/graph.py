@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Add the root directory of your project to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
@@ -40,7 +46,6 @@ agent_builder.add_conditional_edges(
     {"end": END, "summarize_conversation": "summarize_conversation"},
 )
 agent_builder.add_edge("summarize_conversation", END)
-
 
 agent_graph = agent_builder.compile(
     checkpointer=MemorySaver(),

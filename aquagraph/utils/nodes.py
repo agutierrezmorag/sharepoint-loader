@@ -46,7 +46,7 @@ async def manage_system_prompt(state: AgentState):
         formatted_template = RAG_TEMPLATE.format(summary="No hay resumen previo.")
         messages.insert(0, SystemMessage(content=formatted_template))
 
-    return {"messages": messages, "suggested_question": "", "used_docs": []}
+    return {"messages": messages}
 
 
 async def model(state: AgentState):
