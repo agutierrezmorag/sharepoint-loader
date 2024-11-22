@@ -2,13 +2,10 @@ import asyncio
 import uuid
 
 import streamlit as st
-from dotenv import load_dotenv
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import AIMessage, HumanMessage
 
-load_dotenv()
-
-from aquagraph.graph import agent_graph  # noqa: E402
+from aquagraph.graph import agent_graph
 
 
 async def answer_question(question, response_placeholder):
