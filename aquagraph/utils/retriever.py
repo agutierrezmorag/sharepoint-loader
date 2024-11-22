@@ -1,12 +1,15 @@
 import json
 from typing import Dict, List
 
+from dotenv import load_dotenv
 from langchain_community.retrievers import AzureAISearchRetriever
 from langchain_core.callbacks import (
     AsyncCallbackManagerForRetrieverRun,
     CallbackManagerForRetrieverRun,
 )
 from langchain_core.documents import Document
+
+load_dotenv()
 
 
 class CustomAzureAISearchRetriever(AzureAISearchRetriever):
