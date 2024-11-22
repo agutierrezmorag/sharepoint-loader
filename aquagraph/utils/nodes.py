@@ -78,51 +78,37 @@ async def suggest_question(state: AgentState) -> AgentState:
     return {"suggested_question": response.content}
 
 
-def check_message_count(state: AgentState):
+async def summarize_conversation(state: AgentState):
     messages = filter_messages(
         state["messages"],
         include_types=[HumanMessage, AIMessage],
     )
-
     if len(messages) < 6:
-        return "end"
-    return "summarize_conversation"
+        return {"messages": []}
 
-
-async def summarize_conversation(state: AgentState):
     system_message = state["messages"][0]
-
-    # Instead of manual filtering, use trim_messages
     qa_messages = trim_messages(
         state["messages"],
-        max_tokens=2,  # Keep last 2 messages
-        token_counter=len,  # Count messages instead of tokens
+        max_tokens=2,
+        token_counter=len,
         strategy="last",
-        start_on=[HumanMessage, AIMessage],  # Only keep Human and AI messages
-        include_system=False,  # Don't include system message since we handle it separately
+        start_on=[HumanMessage, AIMessage],
+        include_system=False,
     )
 
-    # Get messages to remove (all except system and trimmed messages)
     messages_to_remove = [
-        msg
-        for msg in state["messages"]
-        if msg not in [system_message, *qa_messages]
-        and not isinstance(msg, RemoveMessage)
+        msg for msg in state["messages"] if msg not in [system_message, *qa_messages]
     ]
 
-    # Create conversation string from messages to be removed
-    formatted_conversation = "\n".join(
-        f"{'USER' if isinstance(msg, HumanMessage) else 'BOT'}: {msg.content}"
-        for msg in messages_to_remove
-    )
+    if messages_to_remove:
+        formatted_conversation = "\n".join(
+            f"{'USER' if isinstance(msg, HumanMessage) else 'BOT'}: {msg.content}"
+            for msg in messages_to_remove
+        )
 
-    # Generate new summary only if there are messages to summarize
-    if formatted_conversation:
         response = await LLM.with_config(config={"llm_temperature": 0.2}).ainvoke(
             SUMMARY_TEMPLATE.format(conversation=formatted_conversation)
         )
-        # Update system message with new summary
         system_message.content = RAG_TEMPLATE.format(summary=response.content)
 
-    # Return messages to remove (all except system and last Q&A pair)
     return {"messages": [RemoveMessage(id=msg.id) for msg in messages_to_remove]}

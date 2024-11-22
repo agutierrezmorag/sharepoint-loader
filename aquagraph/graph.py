@@ -9,7 +9,6 @@ from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
 
 from aquagraph.utils.nodes import (
-    check_message_count,
     clean_messages,
     manage_system_prompt,
     model,
@@ -40,11 +39,9 @@ agent_builder.add_conditional_edges(
 agent_builder.add_edge("tools", "model")
 
 agent_builder.add_edge("clean_messages", "suggest_question")
-agent_builder.add_conditional_edges(
-    "suggest_question",
-    check_message_count,
-    {"end": END, "summarize_conversation": "summarize_conversation"},
-)
+agent_builder.add_edge("clean_messages", "summarize_conversation")
+
+agent_builder.add_edge("suggest_question", END)
 agent_builder.add_edge("summarize_conversation", END)
 
 agent_graph = agent_builder.compile(
