@@ -18,7 +18,7 @@ async def answer_question(question, response_placeholder):
 
     try:
         async for event in agent.astream(
-            {"messages": [HumanMessage(content=question)]},
+            {"user_input": question},
             config=st.session_state.configurable,
             stream_mode="messages",
         ):
@@ -58,24 +58,24 @@ if __name__ == "__main__":
 
     st.markdown(
         """
-    <style>
-    .element-container:has(style){
-        display: none;
-    }
-    #button-after {
-        display: none;
-    }
-    .element-container:has(#button-after) {
-        display: none;
-    }
-    .element-container:has(#button-after) + div button {
-        border: none;
-        background: none;
-        font-style: italic;
-        text-align: left;
-    }
-    </style>
-    """,
+            <style>
+            .element-container:has(style){
+                display: none;
+            }
+            #button-after {
+                display: none;
+            }
+            .element-container:has(#button-after) {
+                display: none;
+            }
+            .element-container:has(#button-after) + div button {
+                border: none;
+                background: none;
+                font-style: italic;
+                text-align: left;
+            }
+            </style>
+        """,
         unsafe_allow_html=True,
     )
 
@@ -93,17 +93,19 @@ documentos del área de *Riesgo corporativo* de AquaChile. Pregunta lo que neces
         submit_question(question)
 
     if st.session_state.user_question != "":
-        st.session_state.msgs.add_user_message(
-            HumanMessage(content=st.session_state.user_question)
-        )
-        st.chat_message("human").markdown(st.session_state.user_question)
+        with st.chat_message("human"):
+            st.session_state.msgs.add_message(
+                HumanMessage(content=st.session_state.user_question)
+            )
+            st.markdown(st.session_state.user_question)
 
         with st.chat_message("ai"):
             response_placeholder = st.empty()
             ai_answer = asyncio.run(
                 answer_question(st.session_state.user_question, response_placeholder)
             )
-            st.session_state.msgs.add_ai_message(AIMessage(content=ai_answer))
+
+            st.session_state.msgs.add_message(AIMessage(content=ai_answer))
 
     if st.session_state.suggested_question:
         st.markdown('<span id="button-after"></span>', unsafe_allow_html=True)
