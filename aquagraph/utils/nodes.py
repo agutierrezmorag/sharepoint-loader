@@ -19,47 +19,18 @@ from aquagraph.utils.tools import TOOLS
 
 
 async def manage_system_prompt(state: AgentState):
-    """Manages system prompts by initializing or maintaining conversation context.
-
-    This node ensures there is always a system prompt present in the conversation.
-    If no system prompt exists, it creates one with a default summary template.
-
-    Args:
-        state (AgentState): Current conversation state containing:
-            - messages: List of conversation messages
-            - suggested_question: Optional suggested follow-up
-            - used_docs: List of referenced documents
-
-    Returns:
-        dict: Updated state with managed system messages
-            - messages: List including system prompt
-    """
     messages = state["messages"]
-    system_message = (
-        messages[0] if messages and isinstance(messages[0], SystemMessage) else None
-    )
+    set_prompt = messages and isinstance(messages[0], SystemMessage)
 
-    if not system_message:
+    if not set_prompt:
         formatted_template = RAG_TEMPLATE.format(summary="No hay resumen previo.")
-        messages.insert(0, SystemMessage(content=formatted_template))
+        messages = [SystemMessage(content=formatted_template)] + messages
 
     messages.append(HumanMessage(content=state["user_input"]))
     return {"messages": messages}
 
 
 async def model(state: AgentState):
-    """Processes messages through LLM to generate responses with tool support.
-
-    This node handles the core conversation by passing messages through an LLM
-    with bound tools for enhanced capabilities like document search and retrieval.
-
-    Args:
-        state (AgentState): Current conversation state
-
-    Returns:
-        dict: LLM response state
-            - messages: List containing the LLM's response
-    """
     messages = state["messages"]
     llm_with_tools = LLM.bind_tools(TOOLS)
     response = await llm_with_tools.with_config({"run_name": "agent_answer"}).ainvoke(
@@ -69,17 +40,6 @@ async def model(state: AgentState):
 
 
 def pending_tool_calls(state: AgentState):
-    """Check if latest AI message contains tool calls and mark for processing.
-
-    Args:
-        state (AgentState): Current conversation state
-
-    Returns:
-        str: Next node to process - "tools" or "clean_messages"
-
-    Raises:
-        TypeError: If last message is not an AIMessage
-    """
     last_message = state["messages"][-1]
     if not isinstance(last_message, AIMessage):
         raise TypeError(f"Expected AIMessage, got {type(last_message)}")
@@ -104,14 +64,6 @@ def clean_messages(state: AgentState):
 
 
 async def suggest_question(state: AgentState) -> AgentState:
-    """Generate follow-up question based on last conversation exchange.
-
-    Args:
-        state (AgentState): Current conversation state
-
-    Returns:
-        dict: Generated follow-up question
-    """
     relevant_messages = state["messages"][-2:]
 
     formatted_prompt = Q_SUGGESTION_TEMPLATE.format(
@@ -127,14 +79,6 @@ async def suggest_question(state: AgentState) -> AgentState:
 
 
 def check_message_count(state: AgentState):
-    """Determine next node based on conversation length.
-
-    Args:
-        state (AgentState): Current conversation state
-
-    Returns:
-        str: Next node - "suggest_question" or "summarize_conversation"
-    """
     messages = filter_messages(
         state["messages"],
         include_types=[HumanMessage, AIMessage],
@@ -146,8 +90,6 @@ def check_message_count(state: AgentState):
 
 
 async def summarize_conversation(state: AgentState):
-    """Generate conversation summary and update system message."""
-    # Get system message
     system_message = state["messages"][0]
 
     # Instead of manual filtering, use trim_messages
