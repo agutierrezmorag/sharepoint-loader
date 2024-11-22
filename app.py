@@ -22,7 +22,7 @@ async def answer_question(question, response_placeholder):
             config=st.session_state.configurable,
             stream_mode="messages",
         ):
-            langgraph_node = event[1].get("langgraph_node", "lol")
+            langgraph_node = event[1].get("langgraph_node", "")
 
             if langgraph_node == "model":
                 full_response += event[0].content
