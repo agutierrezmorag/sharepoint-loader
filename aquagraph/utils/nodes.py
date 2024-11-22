@@ -106,9 +106,9 @@ async def summarize_conversation(state: AgentState):
             for msg in messages_to_remove
         )
 
-        response = await LLM.with_config(config={"llm_temperature": 0.2}).ainvoke(
-            SUMMARY_TEMPLATE.format(conversation=formatted_conversation)
-        )
+        response = await LLM.with_config(
+            {"llm_temperature": 0.2, "run_name": "convo-summarizer"}
+        ).ainvoke(SUMMARY_TEMPLATE.format(conversation=formatted_conversation))
         system_message.content = RAG_TEMPLATE.format(summary=response.content)
 
     return {"messages": [RemoveMessage(id=msg.id) for msg in messages_to_remove]}
