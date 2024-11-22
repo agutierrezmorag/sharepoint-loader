@@ -8,7 +8,6 @@ class InputState(TypedDict):
 
 
 class OutputState(TypedDict):
-    response: str
     suggested_question: str
 
 

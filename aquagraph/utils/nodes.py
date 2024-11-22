@@ -36,7 +36,7 @@ async def model(state: AgentState):
     response = await llm_with_tools.with_config({"run_name": "agent_answer"}).ainvoke(
         messages
     )
-    return {"messages": [response], "response": response.content}
+    return {"messages": [response]}
 
 
 def pending_tool_calls(state: AgentState):
