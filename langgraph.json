@@ -1,6 +1,7 @@
 {
     "dependencies": [
-        "pyproject.toml"
+        "pyproject.toml",
+        "requirements.txt"
     ],
     "graphs": {
         "aquagraph": "./aquagraph/graph.py:agent_graph"
