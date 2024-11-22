@@ -31,23 +31,7 @@ Este proyecto es un sistema **RAG** de preguntas y respuestas (Q&A) para AquaChi
     pip install pywin32==308
     ```
 
-5. Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
-
-    ```env
-    O365_CLIENT_ID=""
-    O365_CLIENT_SECRET=""
-    DOCUMENT_LIBRARY_ID=""
-    AZURE_OPENAI_API_KEY=""
-    AZURE_OPENAI_ENDPOINT=""
-    OPENAI_API_VERSION=""
-    AZURE_AI_SEARCH_SERVICE_NAME=""
-    AZURE_AI_SEARCH_ENDPOINT=""
-    AZURE_AI_SEARCH_API_KEY=""
-    LANGCHAIN_TRACING_V2=true
-    LANGCHAIN_ENDPOINT=""
-    LANGCHAIN_API_KEY=""
-    LANGCHAIN_PROJECT="Sharepoint Q&A"
-    ```
+5. Actualiza el archivo `example.env` con los valores correspondientes a las variables de entorno y renombra el archivo a `.env`.
 
 ## Uso
 
@@ -67,19 +51,3 @@ Este proyecto es un sistema **RAG** de preguntas y respuestas (Q&A) para AquaChi
     ```
 
 2. Abre tu navegador web y navega a `http://localhost:8501` para interactuar con el asistente virtual.
-
-## Funciones Principales
-
-### `utils/langchain_utils.py`
-
-- `get_agent()`: Configura y devuelve un ejecutor de agente para manejar las consultas.
-- `set_tracer(project_name)`: Configura un tracer de [LangSmith](https://www.langchain.com/langsmith) para el proyecto.
-- `_get_llm()`: Configura y devuelve un modelo de lenguaje de Azure OpenAI.
-- `_get_tools()`: Configura y devuelve una lista de herramientas para la recuperación de documentos.
-- `_get_agent_prompt()`: Recupera el prompt del agente desde *LangChain Hub*.
-- `q_suggestion_chain()`: Configura y devuelve una cadena de sugerencias de preguntas. *Sin implementar*.
-
-### `app.py`
-
-- `answer_question(question, agent_thoughts_placeholder, response_placeholder)`: Maneja la lógica asincrónica para responder preguntas utilizando el agente configurado.
-- `submit_question(question)`: Envía la pregunta del usuario al sistema.
