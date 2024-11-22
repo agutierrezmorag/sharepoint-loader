@@ -19,6 +19,16 @@ from aquagraph.utils.tools import TOOLS
 
 
 async def manage_system_prompt(state: AgentState):
+    """Manages the system prompt for the conversation.
+
+    Ensures the conversation has a system prompt and adds the user's input as a new message.
+
+    Args:
+        state (AgentState): Current state containing messages and user input
+
+    Returns:
+        dict: Updated messages list with system prompt and user input
+    """
     messages = state["messages"]
     set_prompt = messages and isinstance(messages[0], SystemMessage)
 
@@ -31,6 +41,14 @@ async def manage_system_prompt(state: AgentState):
 
 
 async def model(state: AgentState):
+    """Processes messages through the LLM model with tool bindings.
+
+    Args:
+        state (AgentState): Current state containing conversation messages
+
+    Returns:
+        dict: Model's response message
+    """
     messages = state["messages"]
     llm_with_tools = LLM.bind_tools(TOOLS)
     response = await llm_with_tools.with_config({"run_name": "agent_answer"}).ainvoke(
@@ -40,6 +58,17 @@ async def model(state: AgentState):
 
 
 def pending_tool_calls(state: AgentState):
+    """Checks if the last AI message has pending tool calls.
+
+    Args:
+        state (AgentState): Current state containing conversation messages
+
+    Returns:
+        str: Next node to execute - either "tools" or "clean_messages"
+
+    Raises:
+        TypeError: If last message is not an AIMessage
+    """
     last_message = state["messages"][-1]
     if not isinstance(last_message, AIMessage):
         raise TypeError(f"Expected AIMessage, got {type(last_message)}")
@@ -50,6 +79,14 @@ def pending_tool_calls(state: AgentState):
 
 
 def clean_messages(state: AgentState):
+    """Removes tool-related messages from the conversation.
+
+    Args:
+        state (AgentState): Current state containing conversation messages
+
+    Returns:
+        dict: List of messages to remove from conversation
+    """
     tool_messages = filter_messages(
         state["messages"],
         include_names=["tool_message"],
@@ -64,6 +101,14 @@ def clean_messages(state: AgentState):
 
 
 async def suggest_question(state: AgentState) -> AgentState:
+    """Generates a suggested follow-up question based on the last exchange.
+
+    Args:
+        state (AgentState): Current state containing conversation messages
+
+    Returns:
+        AgentState: Contains the suggested follow-up question
+    """
     relevant_messages = state["messages"][-2:]
 
     formatted_prompt = Q_SUGGESTION_TEMPLATE.format(
@@ -79,6 +124,17 @@ async def suggest_question(state: AgentState) -> AgentState:
 
 
 async def summarize_conversation(state: AgentState):
+    """Summarizes older parts of the conversation and updates the system prompt.
+
+    Only summarizes if there are more than 6 messages (3 Human and 3 AI). Keeps the last 2 exchanges
+    and system prompt intact.
+
+    Args:
+        state (AgentState): Current state containing conversation messages
+
+    Returns:
+        dict: List of messages to remove after summarization
+    """
     messages = filter_messages(
         state["messages"],
         include_types=[HumanMessage, AIMessage],
