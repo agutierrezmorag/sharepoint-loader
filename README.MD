@@ -25,13 +25,7 @@ Este proyecto es un sistema **RAG** de preguntas y respuestas (Q&A) para AquaChi
     pip install -r requirements.txt
     ```
 
-4. **Solo en Windows**: ejecutar el siguiente comando:
-
-    ```sh
-    pip install pywin32==308
-    ```
-
-5. Actualiza el archivo `example.env` con los valores correspondientes a las variables de entorno y renombra el archivo a `.env`.
+4. Actualiza el archivo `example.env` con los valores correspondientes a las variables de entorno y renombra el archivo a `.env`.
 
 ## Uso
 
