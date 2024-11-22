@@ -12,12 +12,14 @@ AZURE_AI_SEARCH_INDEX_NAME = os.getenv("AZURE_AI_SEARCH_INDEX_NAME")
 
 
 def _get_retriever_tool():
-    document_prompt = PromptTemplate.from_template("""
+    document_prompt = PromptTemplate.from_template(
+        """
 Nombre del documento: {title}
 Fuente: {source}
 Pagina: {page}
 Contenido:{page_content}
-===""")
+==="""
+    )
 
     retriever = CustomAzureAISearchRetriever(
         content_key="content",

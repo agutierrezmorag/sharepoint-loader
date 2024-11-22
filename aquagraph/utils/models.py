@@ -11,9 +11,9 @@ AZURE_OPENAI_MODEL = os.getenv("AZURE_OPENAI_MODEL")
 AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
 
 LLM = AzureChatOpenAI(
-    azure_deployment=AZURE_OPENAI_DEPLOYMENT,
-    model=AZURE_OPENAI_MODEL,
-    api_version=AZURE_OPENAI_API_VERSION,
+    deployment_name=AZURE_OPENAI_DEPLOYMENT,
+    model_version=AZURE_OPENAI_MODEL,
+    openai_api_version=AZURE_OPENAI_API_VERSION,
     max_tokens=1000,
     temperature=0.7,
     streaming=True,
