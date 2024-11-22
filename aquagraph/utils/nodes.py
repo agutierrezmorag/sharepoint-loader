@@ -78,7 +78,7 @@ def pending_tool_calls(state: AgentState):
     return "clean_messages"
 
 
-def clean_messages(state: AgentState):
+async def clean_messages(state: AgentState):
     """Removes tool-related messages from the conversation.
 
     Args:
