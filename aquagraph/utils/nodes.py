@@ -43,6 +43,7 @@ async def manage_system_prompt(state: AgentState):
         formatted_template = RAG_TEMPLATE.format(summary="No hay resumen previo.")
         messages.insert(0, SystemMessage(content=formatted_template))
 
+    messages.append(HumanMessage(content=state["user_input"]))
     return {"messages": messages}
 
 
@@ -59,11 +60,12 @@ async def model(state: AgentState):
         dict: LLM response state
             - messages: List containing the LLM's response
     """
+    messages = state["messages"]
     llm_with_tools = LLM.bind_tools(TOOLS)
     response = await llm_with_tools.with_config({"run_name": "agent_answer"}).ainvoke(
-        state["messages"]
+        messages
     )
-    return {"messages": response}
+    return {"messages": [response], "response": response.content}
 
 
 def pending_tool_calls(state: AgentState):
@@ -88,59 +90,17 @@ def pending_tool_calls(state: AgentState):
 
 
 def clean_messages(state: AgentState):
-    """Remove tool-related messages from conversation history and extract document metadata.
-
-    Args:
-        state (AgentState): Current conversation state
-
-    Returns:
-        dict: List of messages to remove and used documents
-    """
     tool_messages = filter_messages(
         state["messages"],
         include_names=["tool_message"],
         include_types=[ToolMessage],
     )
 
-    doc_map = {}
-
-    for msg in tool_messages:
-        if msg.content:
-            doc_parts = msg.content.split("Nombre del documento: ")[1:]
-
-            for part in doc_parts:
-                try:
-                    title = part.split("\nFuente: ")[0].strip()
-                    source = part.split("\nFuente: ")[1].split("\nPagina: ")[0].strip()
-                    page = part.split("\nPagina: ")[1].split("\nContenido:")[0].strip()
-
-                    doc_key = f"{title}:{source}"
-
-                    if doc_key not in doc_map:
-                        doc_map[doc_key] = {
-                            "Nombre del documento": title,
-                            "Fuente": source,
-                            "Páginas": set(),
-                        }
-                    doc_map[doc_key]["Páginas"].add(page)
-
-                except IndexError:
-                    continue
-
-    used_docs = [
-        {
-            "Nombre del documento": doc["Nombre del documento"],
-            "Fuente": doc["Fuente"],
-            "Páginas": ", ".join(sorted(doc["Páginas"])),
-        }
-        for doc in doc_map.values()
-    ]
-
     messages_to_remove = [
         RemoveMessage(id=msg.id) for msg in tool_messages if msg.id is not None
     ]
 
-    return {"messages": messages_to_remove, "used_docs": used_docs}
+    return {"messages": messages_to_remove}
 
 
 async def suggest_question(state: AgentState) -> AgentState:

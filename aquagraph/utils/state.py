@@ -10,7 +10,6 @@ class InputState(TypedDict):
 class OutputState(TypedDict):
     response: str
     suggested_question: str
-    used_docs: list[dict]
 
 
 class AgentState(MessagesState, InputState, OutputState):
